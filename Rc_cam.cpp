@@ -8,7 +8,9 @@ main (int argc, char **argv)
     CvCapture *capture = 0;
     IplImage *frame = 0;
     double w = 320*2, h = 240*2;    //capturesize
-    int c;
+    int x, y, val, c;
+    CvPoint pt;
+    unsigned char bright;
     
     // 指定された番号のカメラに対するキャプチャ構造体を作成する
     capture = cvCreateCameraCapture (0);
@@ -20,8 +22,9 @@ main (int argc, char **argv)
     
     cvNamedWindow ("Capture", CV_WINDOW_AUTOSIZE);
     
-    // カメラから画像をキャプチャする
+    
     while (1) {
+        // カメラから画像をキャプチャする
         frame = cvQueryFrame (capture);
         
         //画像のコピー,グレースケール変換
@@ -32,10 +35,6 @@ main (int argc, char **argv)
         cvSetImageROI(dst_img, cvRect(0, dst_img->height*2/3, dst_img->width, dst_img->height/3));
         
         //白線検出
-        int x, y, val;
-        CvPoint pt;
-        unsigned char bright;
-        
         for(y = dst_img->height*2/3; y < dst_img->height; y += dst_img->height/15){
             for(x = 0; x < dst_img->width; x += 3){
                 bright = dst_img->imageData[dst_img->widthStep * y + x ];
@@ -44,13 +43,13 @@ main (int argc, char **argv)
                     pt.x = x;
                     pt.y = y;
                     cvCircle(frame, pt, 3, CV_RGB(255,0,0),-1);
-                    //break;
+                    break;
                 }
             }
         }
         
-        //cvShowImage ("Capture", dst_img);
-        cvShowImage ("Capture", frame);
+        //cvShowImage ("Capture", dst_img); //カット、グレースケール
+        cvShowImage ("Capture", frame);     //フルサイズ、カラー
         c = cvWaitKey (2);
         if (c == '\x1b')
             break;
