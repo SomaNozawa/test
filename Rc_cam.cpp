@@ -12,8 +12,13 @@ main (int argc, char **argv)
     CvPoint pt;
     unsigned char bright;
     
+    //物体検出用変数
+    CvHaarClassifierCascade* cvHCC = (CvHaarClassifierCascade*)cvLoad("/Users/k14094kk/Desktop/haarcascades/haarcascade_fullbody.xml");
+    CvMemStorage* cvMStr = cvCreateMemStorage(0);
+    CvSeq* face;
+    
     // 指定された番号のカメラに対するキャプチャ構造体を作成する
-    capture = cvCreateCameraCapture (0);
+    capture = cvCreateCameraCapture (1);
     
     /* この設定は，利用するカメラに依存する */
     // キャプチャサイズを設定する．
@@ -39,13 +44,28 @@ main (int argc, char **argv)
             for(x = 0; x < dst_img->width; x += 3){
                 bright = dst_img->imageData[dst_img->widthStep * y + x ];
                 val = bright;
-                if(val >= 200){
+                if(val >= 160){
                     pt.x = x;
                     pt.y = y;
                     cvCircle(frame, pt, 3, CV_RGB(255,0,0),-1);
                     break;
                 }
             }
+        }
+        
+        // 画像中から検出対象の情報を取得する
+        face = cvHaarDetectObjects(frame, cvHCC, cvMStr);
+        
+        for (int i = 0; i < face->total; i++) {
+            //検出情報から顔の位置情報を取得
+            CvRect* faceRect = (CvRect*)cvGetSeqElem(face, i);
+            
+            // 取得した顔の位置情報に基づき、矩形描画を行う
+            cvRectangle(frame,
+                        cvPoint(faceRect->x, faceRect->y),
+                        cvPoint(faceRect->x + faceRect->width, faceRect->y + faceRect->height),
+                        CV_RGB(255, 0 ,0),
+                        3, CV_AA);
         }
         
         //cvShowImage ("Capture", dst_img); //カット、グレースケール
