@@ -17,10 +17,30 @@ main (int argc, char **argv)
     cvCvtColor(src_img, dst_img,CV_RGB2GRAY);
     
     //画像の切り出し
-    cvSetImageROI(dst_img, cvRect(0, dst_img->height*2/3, dst_img->width, dst_img->height/3));
+    cvSetImageROI(dst_img, cvRect(0, dst_img->height * 2/3, dst_img->width, dst_img->height/3));
     
-    //二値化
-    cvThreshold (dst_img, dst_img, 240, 255, CV_THRESH_BINARY);
+    //白線検出
+    int x, y, val;
+    int cnt = 0;
+    CvPoint pt[cnt];
+    unsigned char bright;
+    
+    for(y = dst_img->height*2/3; y < dst_img->height; y += dst_img->height/15){
+        for(x = 0; x < dst_img->width; x += 3){
+            bright = dst_img->imageData[dst_img->widthStep * y + x ];
+            val = bright;
+            if(val >= 250){
+                pt[cnt].x = x;
+                pt[cnt].y = y;
+                cvCircle(src_img, pt[cnt], 2, CV_RGB(255,0,0),-1);
+                if(cnt > 0){
+                    cvLine (src_img, pt[cnt-1], pt[cnt], CV_RGB(255,0,0), 1);
+                }
+                cnt++;
+                break;
+            }
+        }
+    }
     
     //結果を表示する
     cvNamedWindow ("src", CV_WINDOW_AUTOSIZE);
